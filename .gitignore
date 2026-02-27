@@ -1,0 +1,4 @@
+node_modules/
+kodflix.db
+.env
+*.log
