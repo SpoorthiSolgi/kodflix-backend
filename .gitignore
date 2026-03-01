@@ -2,3 +2,5 @@ node_modules/
 kodflix.db
 .env
 *.log
+.vercel
+.env*.local

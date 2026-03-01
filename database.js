@@ -1,20 +1,31 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+// Simple in-memory storage for demo purposes
+const users = new Map();
 
-const dbPath = path.join(__dirname, 'kodflix.db');
-const db = new sqlite3.Database(dbPath);
-
-// Initialize database with users table
-db.serialize(() => {
-  db.run(`CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE NOT NULL,
-    email TEXT UNIQUE NOT NULL,
-    phone TEXT,
-    password TEXT NOT NULL,
-    role TEXT DEFAULT 'user',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )`);
-});
+// Mock database functions
+const db = {
+  run: (sql, params, callback) => {
+    if (sql.includes('CREATE TABLE')) {
+      callback(null);
+    } else if (sql.includes('INSERT')) {
+      const [username, email, phone, password] = params;
+      const id = users.size + 1;
+      users.set(id, { id, username, email, phone, password });
+      callback(null, { lastID: id });
+    }
+  },
+  get: (sql, params, callback) => {
+    if (sql.includes('SELECT')) {
+      const [identifier] = params;
+      let user = null;
+      for (let [id, userData] of users) {
+        if (userData.username === identifier || userData.email === identifier) {
+          user = userData;
+          break;
+        }
+      }
+      callback(null, user);
+    }
+  }
+};
 
 module.exports = db;
